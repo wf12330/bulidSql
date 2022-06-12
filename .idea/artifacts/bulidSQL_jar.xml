@@ -1,0 +1,27 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="bulidSQL:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/bulidSQL_jar</output-path>
+    <root id="archive" name="Sql生成器.jar">
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/src/META-INF/MANIFEST.MF" />
+      </element>
+      <element id="module-output" name="bulidSQL" />
+      <element id="extracted-dir" path="D:/APPS/apache-maven-3.3.9/repository/com/alibaba/easyexcel/3.1.0/easyexcel-3.1.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="D:/APPS/apache-maven-3.3.9/repository/org/apache/poi/poi-ooxml-schemas/4.1.2/poi-ooxml-schemas-4.1.2.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="D:/APPS/apache-maven-3.3.9/repository/org/apache/commons/commons-math3/3.6.1/commons-math3-3.6.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="D:/APPS/apache-maven-3.3.9/repository/commons-codec/commons-codec/1.13/commons-codec-1.13.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="D:/APPS/apache-maven-3.3.9/repository/org/apache/commons/commons-collections4/4.4/commons-collections4-4.4.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="D:/APPS/apache-maven-3.3.9/repository/com/alibaba/easyexcel-support/3.1.0/easyexcel-support-3.1.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="D:/APPS/apache-maven-3.3.9/repository/com/github/virtuald/curvesapi/1.06/curvesapi-1.06.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="D:/APPS/apache-maven-3.3.9/repository/org/slf4j/slf4j-api/1.7.32/slf4j-api-1.7.32.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="D:/APPS/apache-maven-3.3.9/repository/com/alibaba/easyexcel-core/3.1.0/easyexcel-core-3.1.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="D:/APPS/apache-maven-3.3.9/repository/org/apache/poi/poi/4.1.2/poi-4.1.2.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="D:/APPS/apache-maven-3.3.9/repository/org/apache/commons/commons-csv/1.8/commons-csv-1.8.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="D:/APPS/apache-maven-3.3.9/repository/org/ehcache/ehcache/3.9.9/ehcache-3.9.9.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="D:/APPS/apache-maven-3.3.9/repository/org/apache/commons/commons-compress/1.19/commons-compress-1.19.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="D:/APPS/apache-maven-3.3.9/repository/org/apache/xmlbeans/xmlbeans/3.1.0/xmlbeans-3.1.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="D:/APPS/apache-maven-3.3.9/repository/com/zaxxer/SparseBitSet/1.2/SparseBitSet-1.2.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="D:/APPS/apache-maven-3.3.9/repository/org/apache/poi/poi-ooxml/4.1.2/poi-ooxml-4.1.2.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
