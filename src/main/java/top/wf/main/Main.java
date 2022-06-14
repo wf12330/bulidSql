@@ -266,15 +266,11 @@ public class Main {
         }
 
         static Boolean strIsNotNull(String str){
-            if (str==null||"".equals(str)){
-                return false;
-            }
-            return true;
+            return str != null && !"".equals(str);
         }
 
         static void remind(String str){
             JOptionPane.showMessageDialog(null,str,"提示", JOptionPane.ERROR_MESSAGE);
-
         }
 
     }
