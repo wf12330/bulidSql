@@ -94,7 +94,7 @@ public class Main {
 
 
             //设置图标
-            ImageIcon imageIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/sql.png")));
+            ImageIcon imageIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/log/sql.png")));
             jFrame.setIconImage(imageIcon.getImage().getScaledInstance(-1,-1, Image.SCALE_SMOOTH));
 
             //创建一个容器
@@ -167,7 +167,9 @@ public class Main {
             //开始组装
             creTableSql.append("CREATE TABLE ").append(tableName).append(" (\r\n");
 
-            keySql.append("   ").append("PRIMARY KEY (");
+            if (key!=0){
+                keySql.append("   ").append("PRIMARY KEY (");
+            }
             int forKey=1;
             for (SQLBean sqlBean : list) {
                 //添加字段名
@@ -253,7 +255,9 @@ public class Main {
                 creTableSql.append("\r\n");
 
             }
-            keySql.append(")").append(" USING BTREE");
+            if (key!=0){
+                keySql.append(")").append(" USING BTREE");
+            }
             creTableSql.append(keySql);
             creTableSql.append("\r\n");
             creTableSql.append(");");
