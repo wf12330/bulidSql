@@ -50,4 +50,5 @@ public class FirstLine {
                 ", tableCNName='" + tableCNName + '\'' +
                 '}';
     }
+
 }

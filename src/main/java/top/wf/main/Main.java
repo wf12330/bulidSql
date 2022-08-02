@@ -1,9 +1,12 @@
 package top.wf.main;
 
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.read.listener.PageReadListener;
+import com.alibaba.excel.read.metadata.ReadSheet;
 import top.wf.bean.FirstLine;
 import top.wf.bean.SQLBean;
+import top.wf.data.Data;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -11,6 +14,9 @@ import java.awt.*;
 import java.io.File;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @author wangxiaofeng
@@ -27,7 +33,7 @@ public class Main {
         static Font font;
         static JTextField jTextField;
         static JTextArea jTextArea;
-        static String tableName;
+        static StringBuffer stringBuffer=new StringBuffer();
 
         public MyFrame() throws HeadlessException {
             //新建一个窗口
@@ -116,164 +122,39 @@ public class Main {
             jFrame.setVisible(true);
         }
 
-        private void analysisExcel(String path) {
+        private void analysisExcel(String path)  {
 
             File file = new File(path);
             if (!file.isFile()){
                 JOptionPane.showMessageDialog(null,"文件路径有误，请重新选择。","提示", JOptionPane.ERROR_MESSAGE);
                 return;
             }
+            ExcelReader build = EasyExcel.read(path).build();
+            List<ReadSheet> readSheets = build.excelExecutor().sheetList();
 
-            EasyExcel.read(path, FirstLine.class, new PageReadListener<>(MyFrame::mkTableName)).sheet().headRowNumber(1).doRead();
-            EasyExcel.read(path, SQLBean.class, new PageReadListener<>(MyFrame::mkSQLScript)).sheet().headRowNumber(3).doRead();
 
+            // 创建定长线程池
+            ExecutorService newFixedThreadPool = Executors.newFixedThreadPool(5);
+            CountDownLatch countDownLatch = new CountDownLatch(readSheets.size());
+            for (ReadSheet readSheet : readSheets) {
+                Data data = new Data();
+                newFixedThreadPool.execute(() -> {
+
+                    EasyExcel.read(path, FirstLine.class, new PageReadListener<>(data::mkTableName)).sheet(readSheet.getSheetName()).headRowNumber(1).doRead();
+                    EasyExcel.read(path, SQLBean.class, new PageReadListener<SQLBean>(dataList->{
+                        data.mkSQLScript(dataList,data.getTableName());
+                    })).sheet(readSheet.getSheetName()).headRowNumber(3).doRead();
+                    stringBuffer.append(data.getBuffer());
+                    countDownLatch.countDown();
+
+                });
+            }
+            try {
+                countDownLatch.await();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            jTextArea.setText(stringBuffer.toString());
         }
-
-        private static void mkTableName(List<FirstLine> list){
-            FirstLine firstLine = list.get(0);
-            tableName = firstLine.getTableName();
-        }
-        /**
-         * 描述:	 组装SQL脚本
-         * @param list 表名    列名    列中文名     字段类型    字段长度    小数位长度(无可不填)   是否可为空   是否主键
-         */
-        private static void mkSQLScript(List<SQLBean> list) {
-            //判空处理
-            if (null == list || 0 == list.size()) {
-                remind("excel内容有误，修改后重试。");
-                return;
-            }
-            //检测是否有表名
-            if (tableName==null || "".equals(tableName)){
-                remind("没有检测到表名");
-                return;
-            }
-
-            StringBuilder creTableSql= new StringBuilder(),keySql = new StringBuilder();
-
-            //统计有多少主键
-            int key=0;
-            for (SQLBean sqlBean : list) {
-                if (strIsNotNull(sqlBean.getIsK())&&"Y".equals(sqlBean.getIsK())){
-                    if ("Y".equals(sqlBean.getNullAble())){
-                        remind("主键字段必须设置为非空");
-                        return;
-                    }
-                    key++;
-                }
-            }
-
-
-            //开始组装
-            creTableSql.append("CREATE TABLE ").append(tableName).append(" (\r\n");
-
-            if (key!=0){
-                keySql.append("   ").append("PRIMARY KEY (");
-            }
-            int forKey=1;
-            for (SQLBean sqlBean : list) {
-                //添加字段名
-                if (strIsNotNull(sqlBean.getColumnName())) {
-                    creTableSql.append("    " + "`").append(sqlBean.getColumnName()).append("`  ");
-                } else {
-                    remind("字段名不可为空");
-                    return;
-                }
-
-                //添加数据类型
-                if (strIsNotNull(sqlBean.getDataType())){
-                    creTableSql.append(sqlBean.getDataType());
-                }else {
-                    remind("数据类型不可为空");
-                }
-
-                //添加数据长度
-                if (strIsNotNull(sqlBean.getDataLength())){
-                    if (strIsNotNull(sqlBean.getDataSca())){
-                        creTableSql.append("(").append(sqlBean.getDataLength()).append(",").append(sqlBean.getDataSca()).append(")  ");
-                    }else {
-                        creTableSql.append("(").append(sqlBean.getDataLength()).append(")  ");
-                    }
-                }else {
-                    creTableSql.append("  ");
-                }
-
-                //添加可否为空
-                if (strIsNotNull(sqlBean.getNullAble())){
-                    if ("Y".equals(sqlBean.getNullAble())){
-                        creTableSql.append("NULL");
-                    }else if ("N".equals(sqlBean.getNullAble())){
-                        creTableSql.append("NOT NULL");
-                    }else {
-                        remind("可否为空中未知的数据");
-                    }
-                }
-
-                if (sqlBean.getColumnName().equals(list.get(list.size()-1).getColumnName())){
-                    //最后数据添加备注
-                    if (strIsNotNull(sqlBean.getExplain())){
-                        creTableSql.append("  COMMENT '").append(sqlBean.getExplain()).append("'");
-                    }
-                    if (key!=0){
-                        creTableSql.append(",");
-                    }
-                }else {
-                    //添加备注
-                    if (strIsNotNull(sqlBean.getExplain())){
-                        creTableSql.append("  COMMENT '").append(sqlBean.getExplain()).append("',");
-                    }else {
-                        creTableSql.append(",");
-                    }
-                }
-
-                if (key!=0&&forKey==key){
-                    //最后数据添加主键
-                    if (strIsNotNull(sqlBean.getIsK())){
-                        if ("Y".equals(sqlBean.getIsK())){
-                            keySql.append("`").append(sqlBean.getColumnName()).append("`");
-                        }else if ("N".equals(sqlBean.getIsK())){
-                            creTableSql.append("");
-                        }else {
-                            remind("是否主键中未知的数据");
-                        }
-                    }
-                }else {
-                    //添加主键
-                    if (strIsNotNull(sqlBean.getIsK())){
-                        if ("Y".equals(sqlBean.getIsK())){
-                            keySql.append("`").append(sqlBean.getColumnName()).append("`,");
-                        }else if ("N".equals(sqlBean.getIsK())){
-                            creTableSql.append("");
-                        }else {
-                            remind("是否主键中未知的数据");
-                        }
-                        forKey++;
-                    }
-                }
-
-
-                creTableSql.append("\r\n");
-
-            }
-            if (key!=0){
-                keySql.append(")").append(" USING BTREE");
-            }
-            creTableSql.append(keySql);
-            creTableSql.append("\r\n");
-            creTableSql.append(");");
-
-            jTextArea.setText(creTableSql.toString());
-        }
-
-        static Boolean strIsNotNull(String str){
-            return str != null && !"".equals(str);
-        }
-
-        static void remind(String str){
-            JOptionPane.showMessageDialog(null,str,"提示", JOptionPane.ERROR_MESSAGE);
-        }
-
     }
-
-
 }
